@@ -1,0 +1,5 @@
+# .gitignore file for the Backend project
+# Ignore node modules
+node_modules/   
+# Ignore environment variable files
+.env

@@ -1,32 +1,24 @@
-// const Stripe = require('stripe');
-// const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const razorpay = new Razorpay({
+  key_id: process.env.RAZOR_LIVE_KEY,
+  key_secret: process.env.RAZOR_LIVE_SECRET
+});
 
-// // Create Stripe Checkout Session
-// exports.createCheckoutSession = async (req, res) => {
-//   try {
-//     const { items } = req.body;
-//     if (!items || !Array.isArray(items) || items.length === 0) {
-//       return res.status(400).json({ message: 'No items provided' });
-//     }
-//     const line_items = items.map(item => ({
-//       price_data: {
-//         currency: 'usd',
-//         product_data: {
-//           name: item.name,
-//         },
-//         unit_amount: Math.round(item.price * 100),
-//       },
-//       quantity: item.quantity,
-//     }));
-//     const session = await stripe.checkout.sessions.create({
-//       payment_method_types: ['card'],
-//       line_items,
-//       mode: 'payment',
-//       success_url: process.env.CLIENT_URL + '/checkout-success',
-//       cancel_url: process.env.CLIENT_URL + '/cart',
-//     });
-//     res.json({ url: session.url });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Stripe error', error: error.message });
-//   }
-// };
+// Create Razorpay Order
+exports.createRazorpayOrder = async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount) {
+      return res.status(400).json({ message: 'Amount is required' });
+    }
+    const options = {
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}`
+    };
+    console.log("Creating Razorpay order with options:", options);
+    const order = await razorpay.orders.create(options);
+    res.json({ order });
+  } catch (error) {
+    res.status(500).json({ message: 'Razorpay error', error: error.message });
+  }
+};

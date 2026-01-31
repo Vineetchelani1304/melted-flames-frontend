@@ -3,36 +3,76 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 
 // Create order (user)
+
+/**
+ * Create Order + Razorpay Order
+ * USER API
+ */
 exports.createOrder = async (req, res) => {
   try {
     const { items, shippingAddress } = req.body;
-    if (!items || !Array.isArray(items) || items.length === 0 || !shippingAddress) {
-      return res.status(400).json({ message: 'Items and shipping address required' });
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: "Order items required" });
     }
+
     let totalAmount = 0;
+    const orderItems = [];
+
     for (const item of items) {
       const product = await Product.findById(item.productId);
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+
+      if (!product || !product.isActive) {
+        return res.status(400).json({ message: "Invalid product" });
       }
+
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ message: "Insufficient stock" });
+      }
+
       totalAmount += product.price * item.quantity;
+
+      orderItems.push({
+        product: product._id,
+        quantity: item.quantity,
+        price: product.price
+      });
     }
-    const order = new Order({
-      userId: req.user.id,
-      items,
+
+    // 1️⃣ Create DB Order
+    const order = await Order.create({
+      user: req.user.id,
+      items: orderItems,
       shippingAddress,
       totalAmount,
-      paymentStatus: 'pending',
-      orderStatus: 'placed',
+      paymentStatus: "pending"
     });
+
+    // 2️⃣ Create Razorpay Order
+    const razorpayOrder = await razorpay.orders.create({
+      amount: totalAmount * 100,
+      currency: "INR",
+      receipt: `order_${order._id}`
+    });
+
+    order.razorpayOrderId = razorpayOrder.id;
     await order.save();
-    // Optionally clear cart after order
-    await Cart.findOneAndUpdate({ userId: req.user.id }, { items: [] });
-    res.status(201).json(order);
+
+    res.status(201).json({
+      orderId: order._id,
+      razorpayOrderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      status: razorpayOrder.status
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      message: "Order creation failed",
+      error: error.message
+    });
   }
 };
+
 
 // Get my orders (user)
 exports.getMyOrders = async (req, res) => {
@@ -53,6 +93,7 @@ exports.getAllOrders = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // Update order status (admin)
 exports.updateOrderStatus = async (req, res) => {

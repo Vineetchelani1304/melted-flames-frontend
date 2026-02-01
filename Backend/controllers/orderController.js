@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const Razorpay = require("razorpay");
 
 // Create order (user)
 
@@ -8,6 +9,11 @@ const Product = require('../models/Product');
  * Create Order + Razorpay Order
  * USER API
  */
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZOR_LIVE_KEY,
+  key_secret: process.env.RAZOR_LIVE_SECRET
+});
 exports.createOrder = async (req, res) => {
   try {
     const { items, shippingAddress } = req.body;

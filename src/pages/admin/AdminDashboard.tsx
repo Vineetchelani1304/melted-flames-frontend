@@ -1,18 +1,55 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Package, ShoppingCart, DollarSign, TrendingUp } from "lucide-react";
-import { products } from "@/data/products";
-import { mockOrders } from "@/data/orders";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const AdminDashboard = () => {
+  const [productsCount, setProductsCount] = useState(0);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        // Fetch products
+        const token = localStorage.getItem("token");
+        const productsRes = await axios.get("http://localhost:5000/api/products", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setProductsCount(productsRes.data.length);
+
+        // Fetch orders (admin endpoint, adjust as needed)
+        const ordersRes = await axios.get("http://localhost:5000/api/orders/admin", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setOrders(ordersRes.data);
+      } catch (err) {
+        setProductsCount(0);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const pendingOrders = orders.filter(o => o.status === "pending").length;
+
   const stats = [
-    { label: "Total Products", value: products.length, icon: Package, color: "text-blue-600" },
-    { label: "Total Orders", value: mockOrders.length, icon: ShoppingCart, color: "text-green-600" },
-    { label: "Revenue", value: `$${mockOrders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}`, icon: DollarSign, color: "text-amber-600" },
-    { label: "Pending Orders", value: mockOrders.filter(o => o.status === "pending").length, icon: TrendingUp, color: "text-purple-600" },
+    { label: "Total Products", value: productsCount, icon: Package, color: "text-blue-600" },
+    { label: "Total Orders", value: orders.length, icon: ShoppingCart, color: "text-green-600" },
+    { label: "Revenue", value: `$${revenue.toFixed(2)}`, icon: DollarSign, color: "text-amber-600" },
+    { label: "Pending Orders", value: pendingOrders, icon: TrendingUp, color: "text-purple-600" },
   ];
 
-  return (
+  return loading ? (
+    <div className="min-h-screen bg-secondary/20 flex items-center justify-center">
+      <span className="text-muted-foreground">Loading dashboard...</span>
+    </div>
+  ) : (
     <div className="min-h-screen bg-secondary/20">
       <header className="bg-card border-b px-6 py-4">
         <div className="flex items-center justify-between">
@@ -50,14 +87,14 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockOrders.slice(0, 5).map((order) => (
-                <div key={order.id} className="flex items-center justify-between py-2 border-b last:border-0">
+              {orders.slice(0, 5).map((order) => (
+                <div key={order._id || order.id} className="flex items-center justify-between py-2 border-b last:border-0">
                   <div>
-                    <p className="font-medium">{order.id}</p>
-                    <p className="text-sm text-muted-foreground">{order.shippingAddress.fullName}</p>
+                    <p className="font-medium">{order._id || order.id}</p>
+                    <p className="text-sm text-muted-foreground">{order.shippingAddress?.fullName || order.user?.name || "-"}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">${order.total.toFixed(2)}</p>
+                    <p className="font-medium">${order.total?.toFixed(2) ?? "0.00"}</p>
                     <p className="text-sm text-muted-foreground capitalize">{order.status}</p>
                   </div>
                 </div>

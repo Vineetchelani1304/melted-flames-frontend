@@ -11,7 +11,8 @@ export function Footer() {
               Melted Flames
             </Link>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-              Handcrafted luxury candles to illuminate your space and elevate your moments.
+              Handcrafted luxury candles by <b>Shweta Asrani</b>, artist and creator behind Melted Flames.<br />
+              Each piece is thoughtfully designed to elevate everyday moments through scent and warmth.
             </p>
           </div>
 
@@ -63,16 +64,15 @@ export function Footer() {
           <div>
             <h4 className="font-serif text-sm font-semibold text-foreground mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>hello@meltedflames.com</li>
-              <li>+1 (555) 123-4567</li>
-              <li>Mon - Fri: 9am - 6pm</li>
+              <li>Instagram: <a href="https://instagram.com/melted_flames" target="_blank" rel="noopener noreferrer" className="hover:text-primary">@melted_flames</a></li>
+              <li>Phone: +91 76929 74243</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 pt-6 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">
-            2024 Melted Flames. All rights reserved.
+            2026 Melted Flames. All rights reserved.
           </p>
         </div>
       </div>

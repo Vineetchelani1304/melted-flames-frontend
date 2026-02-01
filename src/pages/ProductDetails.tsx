@@ -1,21 +1,83 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { ProductCard } from "@/components/products/ProductCard";
-import { getProductById, products } from "@/data/products";
-import { useCart } from "@/contexts/CartContext";
+import axios from "axios";
+// import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
+
+type Product = {
+  _id: string;
+  name: string;
+  price: number;
+  category: string;
+  description: string;
+  images: string[];
+  stock: number;
+};
+
+const API_BASE = "http://localhost:5000/api/products";
+
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || "");
-  const { addToCart } = useCart();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  if (!product) {
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError("");
+    console.log("Fetching product with ID:", id);
+    // Fetch product by id
+    axios.get(`${API_BASE}/${id}`)
+      .then(res => {
+        setProduct(res.data);
+        // Fetch related products
+        return axios.get(API_BASE);
+      })
+      .then(res => {
+        if (!product) return;
+        // Filter related products by category, exclude current
+        setRelatedProducts(
+          res.data.filter((p: Product) => p.category === product?.category && p._id !== id).slice(0, 4)
+        );
+      })
+      .catch(err => {
+        setError(err?.response?.data?.message || "Product not found");
+      })
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line
+  }, [id]);
+
+  // Refetch related products when product changes
+  useEffect(() => {
+    if (!product) return;
+    axios.get(API_BASE)
+      .then(res => {
+        setRelatedProducts(
+          res.data.filter((p: Product) => p.category === product.category && p._id !== product._id).slice(0, 4)
+        );
+      });
+  }, [product]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container py-24 text-center">
+          <p className="text-muted-foreground">Loading product...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !product) {
     return (
       <Layout>
         <div className="container py-24 text-center">
@@ -28,14 +90,20 @@ const ProductDetails = () => {
     );
   }
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
-    toast.success(`${quantity} x ${product.name} added to cart`);
+  const handleAddToCart = async () => {
+    if (!product) return;
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(
+        "http://localhost:5000/api/cart/add",
+        { productId: product._id, quantity },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`${quantity} x ${product.name} added to cart`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to add to cart");
+    }
   };
-
-  const relatedProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
 
   return (
     <Layout>
@@ -44,6 +112,7 @@ const ProductDetails = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Products
         </Link>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image Gallery */}
@@ -115,7 +184,7 @@ const ProductDetails = () => {
             <h2 className="font-serif text-2xl font-semibold mb-8">You May Also Like</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map(p => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p._id} product={p} />
               ))}
             </div>
           </section>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,18 +9,33 @@ import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
-      await login({ email, password });
+      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const { token, user } = res.data;
+      console.log("Logged in user:", user);
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
       toast.success("Welcome back!");
-      navigate("/");
-    } catch (error) {
+
+      if (user.role === "ADMIN") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      setError("Invalid email or password");
       toast.error("Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,9 +71,10 @@ const Login = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
+            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
           </form>
 
           <p className="text-center text-sm text-muted-foreground">

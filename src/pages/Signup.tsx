@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,21 +9,28 @@ import { toast } from "sonner";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuth();
   const [formData, setFormData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
+    setLoading(true);
     try {
-      await signup({ name: formData.name, email: formData.email, password: formData.password });
+      await axios.post("http://localhost:5000/api/auth/signup", { name: formData.name, email: formData.email, password: formData.password, role: "customer" });
       toast.success("Account created successfully!");
       navigate("/");
-    } catch (error) {
+    } catch (err) {
+      setError("Failed to create account");
       toast.error("Failed to create account");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,9 +60,10 @@ const Signup = () => {
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} required />
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Account"}
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? "Creating..." : "Create Account"}
             </Button>
+            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
           </form>
 
           <p className="text-center text-sm text-muted-foreground">

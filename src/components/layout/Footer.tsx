@@ -27,7 +27,7 @@ export function Footer() {
               </li>
               <li>
                 <Link to="/products?category=trays" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Candle Trays
+                  Concrete Trays
                 </Link>
               </li>
               <li>

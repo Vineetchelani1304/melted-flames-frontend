@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+
 // Auth middleware: protect
 exports.protect = async (req, res, next) => {
   try {
@@ -14,4 +15,12 @@ exports.protect = async (req, res, next) => {
   } catch (error) {
     res.status(401).json({ message: 'Unauthorized' });
   }
+};
+
+// Admin only middleware
+exports.adminOnly = (req, res, next) => {
+  if (!req.user || req.user.role !== 'ADMIN') {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  next();
 };

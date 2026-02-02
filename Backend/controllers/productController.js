@@ -32,6 +32,10 @@ exports.createProduct = async (req, res) => {
     if (!name || !description || !price || !category || !images || stock == null) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+    // Only allow Cloudinary URLs
+    if (!Array.isArray(images) || images.length === 0 || images.some(url => typeof url !== 'string' || !url.startsWith('https://res.cloudinary.com/'))) {
+      return res.status(400).json({ message: 'Product images must be Cloudinary URLs' });
+    }
     const product = new Product({ name, description, price, category, images, stock });
     await product.save();
     console.log("Product created:", product);
@@ -47,6 +51,12 @@ exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    // If images are being updated, only allow Cloudinary URLs
+    if (updates.images) {
+      if (!Array.isArray(updates.images) || updates.images.length === 0 || updates.images.some(url => typeof url !== 'string' || !url.startsWith('https://res.cloudinary.com/'))) {
+        return res.status(400).json({ message: 'Product images must be Cloudinary URLs' });
+      }
+    }
     const product = await Product.findByIdAndUpdate(id, updates, { new: true });
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });

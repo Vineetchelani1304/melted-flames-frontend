@@ -32,10 +32,10 @@ const AdminProducts = () => {
     price: "",
     category: "",
     description: "",
-    image: "",
+    imageUrl: "",
     stock: ""
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Backend base URL
@@ -104,10 +104,31 @@ const AdminProducts = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Handle image file input
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image file input and upload to Cloudinary
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      setImageUploading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const imgForm = new FormData();
+        imgForm.append("image", e.target.files[0]);
+        const uploadRes = await axios.post(
+          "http://localhost:5000/api/upload/cloudinary",
+          imgForm,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setForm((prev) => ({ ...prev, imageUrl: uploadRes.data.url }));
+        toast.success("Image uploaded");
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message || "Image upload failed");
+      } finally {
+        setImageUploading(false);
+      }
     }
   };
 
@@ -121,16 +142,10 @@ const AdminProducts = () => {
     setLoading(true);
     const token = localStorage.getItem("token");
     try {
-      let imageUrl = form.image;
-      // If a new image file is selected, upload it
-      if (imageFile) {
-        const imgForm = new FormData();
-        imgForm.append("image", imageFile);
-        // You must have an endpoint for image upload, e.g. /api/upload
-        const uploadRes = await axios.post("http://localhost:5000/api/upload", imgForm, {
-          headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` }
-        });
-        imageUrl = uploadRes.data.url;
+      if (!form.imageUrl) {
+        toast.error("Please upload an image first");
+        setLoading(false);
+        return;
       }
       if (editingProduct) {
         // Update
@@ -141,7 +156,7 @@ const AdminProducts = () => {
             price: parseFloat(form.price),
             category: form.category,
             description: form.description,
-            images: [imageUrl],
+            images: [form.imageUrl],
             stock: parseInt(form.stock)
           },
           { headers: { Authorization: `Bearer ${token}` } }
@@ -157,7 +172,7 @@ const AdminProducts = () => {
             price: parseFloat(form.price),
             category: form.category,
             description: form.description,
-            images: [imageUrl],
+            images: [form.imageUrl],
             stock: parseInt(form.stock)
           },
           { headers: { Authorization: `Bearer ${token}` } }
@@ -166,7 +181,7 @@ const AdminProducts = () => {
         toast.success("Product added");
       }
       setIsDialogOpen(false);
-      setImageFile(null);
+      setForm(f => ({ ...f, imageUrl: "" }));
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to save product");
     } finally {
@@ -230,12 +245,12 @@ const AdminProducts = () => {
                 </div>
                 <div>
                   <Label>Image</Label>
-                  <Input type="file" accept="image/*" onChange={handleImageChange} />
-                  {form.image && !imageFile && (
-                    <img src={form.image} alt="Current" className="h-16 w-16 mt-2 rounded object-cover" />
+                  <Input type="file" accept="image/*" onChange={handleImageChange} disabled={imageUploading} />
+                  {form.imageUrl && (
+                    <img src={form.imageUrl} alt="Uploaded" className="h-16 w-16 mt-2 rounded object-cover" />
                   )}
-                  {imageFile && (
-                    <img src={URL.createObjectURL(imageFile)} alt="Preview" className="h-16 w-16 mt-2 rounded object-cover" />
+                  {imageUploading && (
+                    <div className="h-16 w-16 mt-2 rounded bg-muted flex items-center justify-center">Uploading...</div>
                   )}
                 </div>
                 <div>

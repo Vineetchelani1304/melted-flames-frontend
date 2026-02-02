@@ -10,6 +10,7 @@ const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const cloudinaryUploadRoutes = require('./routes/cloudinaryUploadRoutes');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 
 // Upload route
 app.use('/api/upload', uploadRoutes);
+app.use('/api/upload', cloudinaryUploadRoutes);
 
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

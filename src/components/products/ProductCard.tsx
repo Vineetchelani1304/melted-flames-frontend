@@ -24,6 +24,7 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     const token = localStorage.getItem("token");
+    console.log("products to check", product);
     try {
       await axios.post(
         "http://localhost:5000/api/cart/add",
@@ -36,11 +37,17 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   };
 
+  // Fix image URL for local uploads
+  let imgSrc = product.images?.[0] || "";
+  if (imgSrc && imgSrc.startsWith("/uploads/")) {
+    imgSrc = `http://localhost:5000${imgSrc}`;
+  }
+
   return (
     <Link to={`/products/${product._id}`} className="group block">
       <div className="relative overflow-hidden rounded-lg bg-secondary/30 aspect-square">
         <img
-          src={product.images?.[0] || ""}
+          src={imgSrc}
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />

@@ -118,25 +118,39 @@ const ProductDetails = () => {
           {/* Image Gallery */}
           <div className="space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden bg-secondary/30">
-              <img
-                src={product.images[selectedImage]}
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
+              {(() => {
+                let imgSrc = product.images[selectedImage] || "";
+                if (imgSrc.startsWith("/uploads/")) {
+                  imgSrc = `http://localhost:5000${imgSrc}`;
+                }
+                return (
+                  <img
+                    src={imgSrc}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
+                );
+              })()}
             </div>
             {product.images.length > 1 && (
               <div className="flex gap-3">
-                {product.images.map((img, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImage === index ? "border-primary" : "border-transparent"
-                    }`}
-                  >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
+                {product.images.map((img, index) => {
+                  let thumbSrc = img || "";
+                  if (thumbSrc.startsWith("/uploads/")) {
+                    thumbSrc = `http://localhost:5000${thumbSrc}`;
+                  }
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                        selectedImage === index ? "border-primary" : "border-transparent"
+                      }`}
+                    >
+                      <img src={thumbSrc} alt="" className="h-full w-full object-cover" />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

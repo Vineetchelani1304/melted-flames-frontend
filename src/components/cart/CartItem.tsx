@@ -75,11 +75,19 @@ export function CartItem({ item, onCartChange }: CartItemProps) {
   return (
     <div className="flex gap-4 py-4 border-b border-border">
       <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/30">
-        <img
-          src={productId.images?.[0] || ""}
-          alt={productId.name}
-          className="h-full w-full object-cover"
-        />
+        {(() => {
+          let imgSrc = productId.images?.[0] || "";
+          if (imgSrc.startsWith("/uploads/")) {
+            imgSrc = `http://localhost:5000${imgSrc}`;
+          }
+          return (
+            <img
+              src={imgSrc}
+              alt={productId.name}
+              className="h-full w-full object-cover"
+            />
+          );
+        })()}
       </div>
       <div className="flex flex-1 flex-col justify-between">
         <div>

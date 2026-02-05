@@ -23,7 +23,7 @@ const Signup = () => {
     }
     setLoading(true);
     try {
-      await axios.post("https://melted-flames-backend.onrender.comapi/auth/signup", { name: formData.name, email: formData.email, password: formData.password, role: "customer" });
+      await axios.post("https://melted-flames-backend.onrender.com/api/auth/signup", { name: formData.name, email: formData.email, password: formData.password, role: "customer" });
       toast.success("Account created successfully!");
       navigate("/");
     } catch (err) {

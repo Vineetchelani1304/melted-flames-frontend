@@ -31,7 +31,7 @@ const Cart = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get("http://localhost:5000/api/cart", {
+        const res = await axios.get("https://melted-flames-backend.onrender.com/api/cart", {
           headers: { Authorization: `Bearer ${token}` }
         });
         console.log("Fetched cart items:", res);

@@ -15,13 +15,13 @@ const AdminDashboard = () => {
       try {
         // Fetch products
         const token = localStorage.getItem("token");
-        const productsRes = await axios.get("http://localhost:5000/api/products", {
+        const productsRes = await axios.get("https://melted-flames-backend.onrender.com/api/products", {
           headers: { Authorization: `Bearer ${token}` }
         });
         setProductsCount(productsRes.data.length);
 
         // Fetch orders (admin endpoint, adjust as needed)
-        const ordersRes = await axios.get("http://localhost:5000/api/orders/admin", {
+        const ordersRes = await axios.get("https://melted-flames-backend.onrender.com/api/orders/admin", {
           headers: { Authorization: `Bearer ${token}` }
         });
         setOrders(ordersRes.data);

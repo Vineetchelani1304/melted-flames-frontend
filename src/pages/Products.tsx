@@ -33,7 +33,7 @@ const Products = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/api/products");
+        const res = await axios.get("https://melted-flames-backend.onrender.com/api/products");
         console.log("Fetched products:", res);
         setProductList(res.data);
       } catch (err) {

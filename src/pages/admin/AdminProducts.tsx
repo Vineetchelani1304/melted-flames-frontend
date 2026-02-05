@@ -39,7 +39,7 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(false);
 
   // Backend base URL
-  const API_URL = "http://localhost:5000/api/products";
+  const API_URL = "https://melted-flames-backend.onrender.com/api/products";
 
   // Fetch all products
   useEffect(() => {
@@ -113,7 +113,7 @@ const AdminProducts = () => {
         const imgForm = new FormData();
         imgForm.append("image", e.target.files[0]);
         const uploadRes = await axios.post(
-          "http://localhost:5000/api/upload/cloudinary",
+          "https://melted-flames-backend.onrender.com/api/upload/cloudinary",
           imgForm,
           {
             headers: {

@@ -19,7 +19,7 @@ type Product = {
   stock: number;
 };
 
-const API_BASE = "http://localhost:5000/api/products";
+const API_BASE = "https://melted-flames-backend.onrender.com/api/products";
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -95,7 +95,7 @@ const ProductDetails = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.post(
-        "http://localhost:5000/api/cart/add",
+        "https://melted-flames-backend.onrender.com/api/cart/add",
         { productId: product._id, quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -121,7 +121,7 @@ const ProductDetails = () => {
               {(() => {
                 let imgSrc = product.images[selectedImage] || "";
                 if (imgSrc.startsWith("/uploads/")) {
-                  imgSrc = `http://localhost:5000${imgSrc}`;
+                  imgSrc = `https://melted-flames-backend.onrender.com${imgSrc}`;
                 }
                 return (
                   <img
@@ -137,7 +137,7 @@ const ProductDetails = () => {
                 {product.images.map((img, index) => {
                   let thumbSrc = img || "";
                   if (thumbSrc.startsWith("/uploads/")) {
-                    thumbSrc = `http://localhost:5000${thumbSrc}`;
+                    thumbSrc = `https://melted-flames-backend.onrender.com${thumbSrc}`;
                   }
                   return (
                     <button

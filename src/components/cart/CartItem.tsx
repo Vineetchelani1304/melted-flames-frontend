@@ -37,7 +37,7 @@ export function CartItem({ item, onCartChange }: CartItemProps) {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        "http://localhost:5000/api/cart/update",
+        "https://melted-flames-backend.onrender.com/api/cart/update",
         { productId: productId._id, quantity: newQty },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -55,7 +55,7 @@ export function CartItem({ item, onCartChange }: CartItemProps) {
     const token = localStorage.getItem("token");
     try {
       await axios.delete(
-        "http://localhost:5000/api/cart/remove",
+        "https://melted-flames-backend.onrender.com/api/cart/remove",
         {
           headers: { Authorization: `Bearer ${token}` },
           data: { productId: productId._id }
@@ -78,7 +78,7 @@ export function CartItem({ item, onCartChange }: CartItemProps) {
         {(() => {
           let imgSrc = productId.images?.[0] || "";
           if (imgSrc.startsWith("/uploads/")) {
-            imgSrc = `http://localhost:5000${imgSrc}`;
+            imgSrc = `https://melted-flames-backend.onrender.com${imgSrc}`;
           }
           return (
             <img

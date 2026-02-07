@@ -27,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
     console.log("products to check", product);
     try {
       await axios.post(
-        "http://localhost:5000/api/cart/add",
+        "https://melted-flames-backend.onrender.com/api/cart/add",
         { productId: product._id, quantity: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -40,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
   // Fix image URL for local uploads
   let imgSrc = product.images?.[0] || "";
   if (imgSrc && imgSrc.startsWith("/uploads/")) {
-    imgSrc = `http://localhost:5000${imgSrc}`;
+    imgSrc = `https://melted-flames-backend.onrender.com${imgSrc}`;
   }
 
   return (
